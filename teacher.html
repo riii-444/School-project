@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>教員用 | YOUR VOICE</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap wide">
+    <a class="logo" href="index.html">YOUR VOICE <span style="font-weight:500;font-size:12px;letter-spacing:0;color:var(--sub)">教員用</span></a>
+    <nav class="nav"><a href="index.html">生徒用ページへ</a><a href="#" id="logout" hidden>ログアウト</a></nav>
+  </div>
+</header>
+
+<!-- ログイン -->
+<main class="wrap" id="loginView" hidden>
+  <div class="card login">
+    <h2>教員ログイン</h2>
+    <p class="lead">教員用パスワードを入力してください。</p>
+    <form id="loginForm">
+      <label for="pw">パスワード</label>
+      <input type="password" id="pw" autocomplete="current-password">
+      <div id="loginErr" style="color:var(--s3);font-size:13px;min-height:22px;margin-top:6px"></div>
+      <button class="btn block" type="submit">ログイン</button>
+    </form>
+    <p class="note">試作版の仮パスワードは <b>teacher1234</b> です(app.js で変更できます)。本番では必ず正式な認証に置き換えてください。</p>
+  </div>
+</main>
+
+<!-- 管理画面 -->
+<main class="wrap wide" id="adminView" hidden>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="card">
+    <h2>投稿の管理</h2>
+    <p class="lead">状況の変更・回答の記入・公開の可否を設定できます。変更は「保存」で反映されます。</p>
+
+    <div class="filters">
+      <div><label for="tKey">キーワード</label><input type="search" id="tKey"></div>
+      <div><label for="tStatus">対応状況</label>
+        <select id="tStatus"><option value="">すべて</option><option>受付済み</option><option>検討中</option><option>実行</option><option>実行不可</option></select></div>
+      <div><label for="tPub">公開状況</label>
+        <select id="tPub"><option value="">すべて</option><option value="wait">公開待ち(公開許可あり・未承認)</option><option value="on">掲載中</option><option value="off">非公開</option></select></div>
+      <div><label for="tSort">並び替え</label>
+        <select id="tSort"><option value="new">新しい順</option><option value="old">古い順</option><option value="likes">いいね順</option></select></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn ghost small" id="csv" type="button">CSVで書き出す</button>
+      <button class="btn ghost small" id="addSample" type="button">サンプルを追加</button>
+      <button class="btn ghost small" id="rmSample" type="button">サンプルを削除</button>
+      <button class="btn danger small" id="clearAll" type="button">全データを削除</button>
+    </div>
+  </div>
+
+  <div class="posts" id="list"></div>
+
+  <footer>
+    <p>※試作版です。データはこのブラウザ内にのみ保存されるため、生徒の投稿を先生のPCで見ることはまだできません。実運用にはサーバー保存と教員認証が必要です。</p>
+  </footer>
+</main>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = YV.esc;
+
+  function show() {
+    var ok = YV.isTeacher();
+    $('loginView').hidden = ok; $('adminView').hidden = !ok; $('logout').hidden = !ok;
+    if (ok) render();
+  }
+
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (YV.login($('pw').value)) { $('pw').value = ''; $('loginErr').textContent = ''; show(); }
+    else $('loginErr').textContent = 'パスワードが違います。';
+  });
+  $('logout').addEventListener('click', function (e) { e.preventDefault(); YV.logout(); show(); });
+
+  function stats() {
+    var l = YV.all(), n = function (s) { return l.filter(function (p) { return p.status === s; }).length; };
+    var wait = l.filter(function (p) { return p.publicConsent && !p.approved; }).length;
+    var cell = function (v, t, c) { return '<div class="stat"><b' + (c ? ' style="color:' + c + '"' : '') + '>' + v + '</b><span>' + t + '</span></div>'; };
+    $('stats').innerHTML = cell(l.length, '総投稿数') + cell(n('受付済み'), '未対応', 'var(--s0)') + cell(n('検討中'), '検討中', 'var(--s1)') +
+      cell(n('実行'), '実行', 'var(--s2)') + cell(n('実行不可'), '実行不可', 'var(--s3)') + cell(wait, '公開待ち', 'var(--brand)');
+  }
+
+  function render() {
+    stats();
+    var key = $('tKey').value.trim().toLowerCase(), st = $('tStatus').value, pub = $('tPub').value, sort = $('tSort').value;
+    var list = YV.all().filter(function (p) {
+      if (st && p.status !== st) return false;
+      if (pub === 'wait' && !(p.publicConsent && !p.approved)) return false;
+      if (pub === 'on' && !p.approved) return false;
+      if (pub === 'off' && (p.approved || p.publicConsent)) return false;
+      if (key && (p.subject + ' ' + p.body + ' ' + p.no + ' ' + p.name + ' ' + p.reply).toLowerCase().indexOf(key) < 0) return false;
+      return true;
+    });
+    list.sort(function (a, b) {
+      if (sort === 'likes') return (b.likes - a.likes);
+      if (sort === 'old') return new Date(a.createdAt) - new Date(b.createdAt);
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    $('list').innerHTML = list.length ? list.map(card).join('') : '<div class="card empty">該当する投稿はありません。</div>';
+  }
+
+  function card(p) {
+    var who = [p.grade, p.cls && p.cls + '組', p.num && p.num + '番', p.name].filter(Boolean).join(' ') || '匿名';
+    var opts = YV.STATUSES.map(function (s) { return '<option' + (s === p.status ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    var canPub = p.publicConsent;
+    return '<article class="tpost' + (p.status === '受付済み' ? ' new' : '') + '" data-id="' + p.id + '">' +
+      '<div class="meta" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--sub)">' +
+      '<b style="font-family:ui-monospace,monospace;color:var(--ink)">' + esc(p.no) + '</b>' + YV.badge(p.status) +
+      '<span class="chip">' + esc(p.category) + '</span><span>' + YV.date(p.createdAt) + '</span>' +
+      '<span>♥ ' + (p.likes || 0) + '</span>' + (p.approved ? '<span class="chip" style="background:#d1fae5;color:#047857">掲載中</span>' : '') +
+      (p.sample ? '<span class="chip" style="background:#eee;color:#666">サンプル</span>' : '') + '</div>' +
+      '<h3 style="margin:8px 0 0">' + esc(p.subject) + '</h3>' +
+      '<div class="who">投稿者:' + esc(who) + '　/　公開許可:' + (canPub ? 'あり' : 'なし') + '</div>' +
+      '<div class="body">' + esc(p.body) + '</div>' +
+      '<div class="tools">' +
+        '<div class="row"><div><label>対応状況</label><select class="f-status">' + opts + '</select></div></div>' +
+        '<label>生徒への回答(投稿者の状況確認画面と、公開時は一覧にも表示されます)</label>' +
+        '<textarea class="f-reply" placeholder="例:ご意見ありがとうございます。職員会議で検討します。">' + esc(p.reply) + '</textarea>' +
+        '<label>公開用の件名<span class="opt">個人情報・特定できる表現は削除してください</span></label>' +
+        '<input type="text" class="f-psub" value="' + esc(p.publicSubject) + '">' +
+        '<label>公開用の本文</label>' +
+        '<textarea class="f-pbody">' + esc(p.publicBody) + '</textarea>' +
+        '<label class="check" style="margin-top:12px"><input type="checkbox" class="f-appr"' + (p.approved ? ' checked' : '') + (canPub ? '' : ' disabled') + '>' +
+          '<span>「みんなの意見」に掲載する(確認済み)' + (canPub ? '' : '<small>投稿者の公開許可がないため掲載できません。</small>') + '</span></label>' +
+        '<div class="actions"><button class="btn small f-save" type="button">保存</button>' +
+          '<button class="btn danger small f-del" type="button">削除</button><span class="saved">保存しました</span></div>' +
+      '</div></article>';
+  }
+
+  $('list').addEventListener('click', function (e) {
+    var art = e.target.closest('.tpost'); if (!art) return;
+    var id = art.getAttribute('data-id');
+    if (e.target.classList.contains('f-save')) {
+      var ap = art.querySelector('.f-appr');
+      YV.update(id, {
+        status: art.querySelector('.f-status').value, reply: art.querySelector('.f-reply').value.trim(),
+        publicSubject: art.querySelector('.f-psub').value.trim(), publicBody: art.querySelector('.f-pbody').value.trim(),
+        approved: !ap.disabled && ap.checked
+      });
+      stats();
+      var s = art.querySelector('.saved'); s.classList.add('on'); setTimeout(function () { s.classList.remove('on'); }, 1600);
+    }
+    if (e.target.classList.contains('f-del')) {
+      if (confirm('この投稿を完全に削除します。よろしいですか?')) { YV.remove(id); render(); }
+    }
+  });
+
+  ['tKey', 'tStatus', 'tPub', 'tSort'].forEach(function (id) { $(id).addEventListener('input', render); $(id).addEventListener('change', render); });
+
+  $('addSample').addEventListener('click', function () { YV.addSamples(); render(); });
+  $('rmSample').addEventListener('click', function () { YV.removeSamples(); render(); });
+  $('clearAll').addEventListener('click', function () { if (confirm('全ての投稿を削除します。元に戻せません。よろしいですか?')) { YV.clearAll(); render(); } });
+
+  $('csv').addEventListener('click', function () {
+    var rows = [['受付番号', '受付日', '分野', '件名', '内容', '学年', 'クラス', '出席番号', '氏名', '公開許可', '掲載', '状況', 'いいね', '回答']];
+    YV.all().forEach(function (p) {
+      rows.push([p.no, YV.date(p.createdAt), p.category, p.subject, p.body, p.grade, p.cls, p.num, p.name, p.publicConsent ? 'あり' : 'なし', p.approved ? '掲載中' : '', p.status, p.likes || 0, p.reply]);
+    });
+    var csv = '\uFEFF' + rows.map(function (r) { return r.map(function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'yourvoice.csv'; a.click();
+  });
+
+  show();
+})();
+</script>
+</body>
+</html>
