@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YOUR VOICE | 学校のデジタル目安箱</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#top">YOUR VOICE</a>
+    <nav class="nav">
+      <a href="#submit">意見を送る</a>
+      <a href="#check">状況確認</a>
+      <a href="#public">みんなの意見</a>
+      <a href="teacher.html">教員用</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="wrap">
+    <small>DIGITAL SUGGESTION BOX</small>
+    <h1>生徒の声を、学校の未来へ。</h1>
+    <p>授業・施設・ルール・行事など、学校をよりよくするためのご意見やご提案を気軽に送ってください。</p>
+    <a class="btn white" href="#submit">ご意見・ご提案を送る</a>
+    <div class="tags"><span>🔒 匿名OK</span><span>📮 24時間いつでも</span><span>💬 先生からの返事が届く</span></div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section class="block" id="submit">
+    <div class="card">
+      <h2>ご意見・ご提案を送る</h2>
+      <p class="lead">匿名で投稿できます。学年・クラス・氏名などは任意です。</p>
+
+      <form id="form">
+        <label for="subject">件名<span class="req">必須</span></label>
+        <input type="text" id="subject" maxlength="60" required placeholder="例:雨の日の傘立てを増やしてほしい">
+
+        <label for="category">分野<span class="req">必須</span></label>
+        <select id="category" required></select>
+
+        <label for="body">意見・提案の内容<span class="req">必須</span></label>
+        <textarea id="body" maxlength="2000" required placeholder="困っていること、こうなったらいいなと思うこと、理由などを自由に書いてください。"></textarea>
+        <div class="count"><span id="cnt">0</span> / 2000</div>
+
+        <div class="row">
+          <div><label for="grade">学年<span class="opt">任意</span></label>
+            <select id="grade"><option value="">回答しない</option><option>1年</option><option>2年</option><option>3年</option></select></div>
+          <div><label for="cls">クラス<span class="opt">任意</span></label><input type="text" id="cls" maxlength="10"></div>
+          <div><label for="num">出席番号<span class="opt">任意</span></label><input type="text" id="num" maxlength="10"></div>
+          <div><label for="name">氏名<span class="opt">任意</span></label><input type="text" id="name" maxlength="30"></div>
+        </div>
+
+        <label class="check" for="consent">
+          <input type="checkbox" id="consent">
+          <span>個人情報を除いたうえで、この意見を「みんなの意見」に掲載してもよいです。
+            <small>チェックがない場合、公開一覧には掲載されません。</small></span>
+        </label>
+
+        <div class="note">⚠ 他の人の悪口や個人が特定できる内容は書かないでください。氏名などを書いた場合も、公開時に先生が削除します。</div>
+
+        <button class="btn block" type="submit">意見を送信する</button>
+      </form>
+
+      <div class="receipt" id="receipt" role="status">
+        <h3>✅ ご意見を受け付けました。</h3>
+        <p>状況確認に必要なので、受付番号と確認コードを控えてください。(スクリーンショット推奨)</p>
+        <div class="codes">
+          <div><small>受付番号</small><b id="rNo"></b></div>
+          <div><small>確認コード</small><b id="rCode"></b></div>
+        </div>
+        <p style="margin:0;font-size:13px;color:var(--sub)">確認コードはこの画面でのみ表示します。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="check">
+    <div class="card">
+      <h2>提出状況を確認</h2>
+      <p class="lead">投稿時に発行された受付番号と確認コードを入力してください。</p>
+      <form id="checkForm">
+        <div class="row">
+          <div><label for="cNo">受付番号</label><input type="text" id="cNo" placeholder="YV-1004" autocomplete="off"></div>
+          <div><label for="cCode">確認コード</label><input type="text" id="cCode" placeholder="6文字" autocomplete="off"></div>
+        </div>
+        <button class="btn ghost" type="submit" style="margin-top:14px">確認する</button>
+      </form>
+      <div id="checkResult"></div>
+    </div>
+  </section>
+
+  <section class="block" id="public">
+    <div class="card">
+      <h2>みんなの意見</h2>
+      <p class="lead">公開許可があり、先生が確認済みの意見を掲載します。「いいね」で賛成の気持ちを伝えられます。</p>
+
+      <div class="filters">
+        <div><label for="fKey">キーワード</label><input type="search" id="fKey"></div>
+        <div><label for="fStatus">対応状況</label>
+          <select id="fStatus"><option value="">すべて</option><option>受付済み</option><option>検討中</option><option>実行</option><option>実行不可</option></select></div>
+        <div><label for="fCat">分野</label><select id="fCat"><option value="">すべて</option></select></div>
+        <div><label for="fSort">並び替え</label>
+          <select id="fSort"><option value="likes">いいねが多い順</option><option value="new">最新順</option><option value="old">最古順</option></select></div>
+        <div><label for="fFrom">投稿日(開始)</label><input type="date" id="fFrom"></div>
+        <div><label for="fTo">投稿日(終了)</label><input type="date" id="fTo"></div>
+      </div>
+      <button class="btn ghost small" id="fReset" type="button">検索条件をリセット</button>
+
+      <div class="posts" id="posts"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p>※試作版です。投稿・いいね・確認コードはこのブラウザ内に保存されます。学校で実際に使うにはサーバー保存、教員認証、アクセス制御などが必要です。実在する個人情報は入力しないでください。</p>
+  <p><a href="teacher.html">教員用ログイン</a></p>
+</footer>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = YV.esc;
+
+  // 選択肢
+  YV.CATEGORIES.forEach(function (c) {
+    $('category').insertAdjacentHTML('beforeend', '<option>' + c + '</option>');
+    $('fCat').insertAdjacentHTML('beforeend', '<option>' + c + '</option>');
+  });
+  $('body').addEventListener('input', function () { $('cnt').textContent = $('body').value.length; });
+
+  // 投稿
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var p = YV.add({
+      subject: $('subject').value.trim(), category: $('category').value, body: $('body').value.trim(),
+      grade: $('grade').value, cls: $('cls').value.trim(), num: $('num').value.trim(), name: $('name').value.trim(),
+      publicConsent: $('consent').checked
+    });
+    $('rNo').textContent = p.no; $('rCode').textContent = p.code;
+    $('receipt').classList.add('show');
+    $('form').reset(); $('cnt').textContent = 0;
+    $('receipt').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  // 状況確認
+  $('checkForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var p = YV.find($('cNo').value, $('cCode').value), box = $('checkResult');
+    if (!p) { box.innerHTML = '<div class="note" style="background:#fff1f1;border-color:#f3b4b4">受付番号または確認コードが一致しません。入力をご確認ください。</div>'; return; }
+    box.innerHTML =
+      '<div class="post" style="margin-top:16px"><div class="meta">' + YV.badge(p.status) +
+      '<span class="chip">' + esc(p.category) + '</span><span>' + YV.date(p.createdAt) + ' 受付</span></div>' +
+      '<h3>' + esc(p.subject) + '</h3><p>' + esc(p.body) + '</p>' +
+      (p.reply ? '<div class="reply"><b>学校からの回答</b>' + esc(p.reply) + '</div>'
+               : '<div class="reply"><b>学校からの回答</b>まだ回答はありません。確認までしばらくお待ちください。</div>') +
+      '<p style="margin-top:10px;font-size:13px;color:var(--sub)">公開状況:' +
+      (p.approved ? '「みんなの意見」に掲載中' : (p.publicConsent ? '先生が確認中(確認後に掲載されます)' : '非公開(先生だけが見ています)')) + '</p></div>';
+  });
+
+  // 公開一覧
+  function render() {
+    var key = $('fKey').value.trim().toLowerCase(), st = $('fStatus').value, cat = $('fCat').value, sort = $('fSort').value;
+    var from = $('fFrom').value ? new Date($('fFrom').value + 'T00:00:00') : null;
+    var to = $('fTo').value ? new Date($('fTo').value + 'T23:59:59') : null;
+    var list = YV.all().filter(function (p) {
+      if (!p.approved || !p.publicConsent) return false;
+      if (st && p.status !== st) return false;
+      if (cat && p.category !== cat) return false;
+      var d = new Date(p.createdAt);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      if (key && (p.publicSubject + ' ' + p.publicBody + ' ' + p.reply).toLowerCase().indexOf(key) < 0) return false;
+      return true;
+    });
+    list.sort(function (a, b) {
+      if (sort === 'likes') return (b.likes - a.likes) || (new Date(b.createdAt) - new Date(a.createdAt));
+      if (sort === 'old') return new Date(a.createdAt) - new Date(b.createdAt);
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    $('posts').innerHTML = list.length ? list.map(function (p) {
+      var on = YV.isLiked(p.id);
+      return '<article class="post"><div class="meta">' + YV.badge(p.status) + '<span class="chip">' + esc(p.category) + '</span><span>' + YV.date(p.createdAt) + '</span></div>' +
+        '<h3>' + esc(p.publicSubject) + '</h3><p>' + esc(p.publicBody) + '</p>' +
+        (p.reply ? '<div class="reply"><b>学校からの回答</b>' + esc(p.reply) + '</div>' : '') +
+        '<div class="foot"><button class="like' + (on ? ' on' : '') + '" data-id="' + p.id + '">' + (on ? '♥' : '♡') + ' いいね ' + (p.likes || 0) + '</button></div></article>';
+    }).join('') : '<div class="empty">条件に合う意見はまだありません。</div>';
+  }
+  $('posts').addEventListener('click', function (e) {
+    var b = e.target.closest('.like'); if (!b) return;
+    YV.toggleLike(b.getAttribute('data-id')); render();
+  });
+  ['fKey', 'fStatus', 'fCat', 'fSort', 'fFrom', 'fTo'].forEach(function (id) {
+    $(id).addEventListener('input', render); $(id).addEventListener('change', render);
+  });
+  $('fReset').addEventListener('click', function () {
+    ['fKey', 'fStatus', 'fCat', 'fFrom', 'fTo'].forEach(function (id) { $(id).value = ''; });
+    $('fSort').value = 'likes'; render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
